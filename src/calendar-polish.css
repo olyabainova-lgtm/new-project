@@ -1,0 +1,47 @@
+/* Teacher-only semantic calendar palette */
+.occupation-lavender{--occupation-bg:#f3e8ff;--occupation-text:#7e22ce}
+.occupation-violet{--occupation-bg:#ede9fe;--occupation-text:#6d28d9}
+.occupation-sky{--occupation-bg:#e0f2fe;--occupation-text:#0369a1}
+.occupation-cyan{--occupation-bg:#cffafe;--occupation-text:#0e7490}
+.occupation-orange{--occupation-bg:#ffedd5;--occupation-text:#c2410c}
+.occupation-emerald{--occupation-bg:#d1fae5;--occupation-text:#047857}
+.occupation-teal{--occupation-bg:#ccfbf1;--occupation-text:#0f766e}
+
+.calendar-toolbar h2{max-width:34ch;text-wrap:balance}
+.calendar-cell,.time-label,.day-head strong{font-variant-numeric:tabular-nums}
+.calendar-cell{height:40px;min-height:40px;transition-property:background-color,box-shadow,opacity,filter,scale;transition-duration:160ms;transition-timing-function:cubic-bezier(.2,0,0,1)}
+.calendar-cell:not(:disabled):active{scale:.96}
+.calendar-cell:focus-visible,.week-nav button:focus-visible,.teacher-calendar-legend summary:focus-visible{outline:3px solid #8b5cf6;outline-offset:-3px}
+.week-nav .icon-btn{min-width:40px;min-height:40px}
+.week-nav .btn{min-height:40px}
+.calendar-cell[class*="source-"]{isolation:isolate}
+.calendar-cell[class*="source-"]::before{content:"";position:absolute;z-index:1;left:0;top:0;bottom:0;width:4px;pointer-events:none}
+.calendar-cell.source-manual::before{background:var(--occupation-text)}
+.calendar-cell.source-note::before{background:repeating-linear-gradient(to bottom,var(--occupation-text) 0 4px,transparent 4px 7px)}
+.calendar-cell.source-todo::before{width:7px;background:linear-gradient(to right,var(--occupation-text) 0 2px,transparent 2px 4px,var(--occupation-text) 4px 6px,transparent 6px)}
+.calendar-cell.scheduled-note-cell::after{content:none}
+.calendar-event-content{height:100%;display:flex!important;align-items:center;gap:4px;padding:0 5px 0 8px!important;overflow:hidden}
+.calendar-event-content>span{min-width:0;padding:0!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.event-source-icon{width:12px;height:12px;flex:0 0 auto;stroke-width:2.4}
+.calendar-cell.scheduled-done .event-source-icon{padding:1px;border-radius:50%;background:var(--occupation-text);color:#fff;text-decoration:none}
+
+.teacher-calendar-legend{margin-top:14px;border-radius:12px;background:#faf9ff;box-shadow:inset 0 0 0 1px #e9e5f5,0 4px 14px #4c1d9508}
+.teacher-calendar-legend summary{min-height:40px;display:flex;align-items:center;padding:0 13px;cursor:pointer;color:#5b21b6;font-size:.73rem;font-weight:750;list-style:none}
+.teacher-calendar-legend summary::-webkit-details-marker{display:none}
+.teacher-calendar-legend summary::after{content:"+";margin-left:auto;font-size:1rem;transition-property:rotate;transition-duration:160ms;transition-timing-function:cubic-bezier(.2,0,0,1)}
+.teacher-calendar-legend[open] summary::after{rotate:45deg}
+.legend-sections{display:grid;grid-template-columns:1.5fr 1fr;gap:18px;padding:2px 13px 14px}
+.legend-sections section>strong{display:block;margin-bottom:8px;color:#4b5563;font-size:.63rem;text-transform:uppercase;letter-spacing:.07em}
+.activity-legend,.source-legend{display:flex;flex-wrap:wrap;gap:7px 12px}
+.activity-legend span,.source-legend span{display:flex;align-items:center;gap:5px;color:#64748b;font-size:.66rem}
+.legend-color{width:13px;height:13px;flex:0 0 auto;border-radius:4px;background:var(--occupation-bg);box-shadow:inset 3px 0 var(--occupation-text),0 0 0 1px #0000000d}
+.legend-color.occupation-pending{box-shadow:inset 3px 0 #f59e0b,0 0 0 1px #0000000d}
+.source-symbol{width:20px;height:20px;position:relative;display:grid;place-items:center;border-radius:5px;background:#ede9fe;color:#6d28d9;overflow:hidden}
+.source-symbol svg{width:11px;height:11px;z-index:1}
+.source-symbol::before{content:"";position:absolute;left:0;inset-block:0;width:3px;background:currentColor}
+.source-symbol.source-note::before{background:repeating-linear-gradient(to bottom,currentColor 0 3px,transparent 3px 5px)}
+.source-symbol.source-todo::before{width:5px;background:linear-gradient(to right,currentColor 0 1px,transparent 1px 3px,currentColor 3px 4px,transparent 4px)}
+.source-symbol.source-done{background:#dcfce7;color:#15803d}
+
+@media(max-width:760px){.legend-sections{grid-template-columns:1fr}.calendar-cell{height:40px}.activity-legend{display:grid;grid-template-columns:1fr 1fr}}
+@media(prefers-reduced-motion:reduce){.calendar-cell,.teacher-calendar-legend summary::after{transition-duration:0ms}.calendar-cell:not(:disabled):active{scale:1}}

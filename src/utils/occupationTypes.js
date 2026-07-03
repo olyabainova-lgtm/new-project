@@ -1,14 +1,14 @@
 export const occupationTypes = [
-  { value:'teaching_preparation', label:'Teaching preparation', color:'purple' },
-  { value:'class', label:'Class', color:'purple' },
-  { value:'consultation', label:'Consultation', color:'blue' },
-  { value:'administrative_meeting', label:'Administrative meeting', color:'amber' },
+  { value:'teaching_preparation', label:'Teaching preparation', color:'lavender' },
+  { value:'class', label:'Class', color:'violet' },
+  { value:'consultation', label:'Consultation', color:'sky' },
+  { value:'administrative_meeting', label:'Administrative meeting', color:'orange' },
   { value:'administration', label:'Administration', color:'amber' },
-  { value:'research', label:'Research work', color:'green' },
+  { value:'research', label:'Research work', color:'emerald' },
   { value:'grading', label:'Grading / feedback', color:'rose' },
   { value:'supervision', label:'Thesis supervision', color:'indigo' },
   { value:'personal', label:'Personal', color:'gray' },
-  { value:'communication', label:'Communication', color:'blue' },
+  { value:'communication', label:'Communication', color:'cyan' },
   { value:'other', label:'Other', color:'slate' },
 ]
 export const getOccupationType = type => occupationTypes.find(item=>item.value===type) || occupationTypes.at(-1)

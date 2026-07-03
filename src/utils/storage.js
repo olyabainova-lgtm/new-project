@@ -1,6 +1,6 @@
 import { legacyReasonToType } from './occupationTypes'
 import { createDefaultEthics, createDefaultPractice, mergeNirmTracking } from './supervisionTracking'
-const KEYS = { requests: 'teacherflow_requests', blocked: 'teacherflow_blocked', todos:'teacherflow_todos', students:'teacherflow_students', initialized: 'teacherflow_initialized' }
+const KEYS = { requests: 'teacherflow_requests', blocked: 'teacherflow_blocked', todos:'teacherflow_todos', students:'teacherflow_students', rubrics:'teacherflow_grading_rubrics', papers:'teacherflow_grading_papers', initialized: 'teacherflow_initialized' }
 
 export function readStorage(key, fallback = []) {
   try {
@@ -19,6 +19,8 @@ const migrateBlock = block => {
 }
 const migrateTodo = todo => ({description:'',category:todo.category==='teaching'?'teaching_preparation':todo.category||'other',priority:'medium',status:todo.status==='not_started'?'planned':todo.status||'planned',dueDate:'',scheduledDate:'',scheduledStartTime:'',scheduledEndTime:'',estimatedDuration:30,scheduledBlockId:null,origin:'todo',...todo,category:todo.category==='teaching'?'teaching_preparation':todo.category||'other',status:todo.status==='not_started'?'planned':todo.status||'planned'})
 const migrateStudent = student => {const now=student.createdAt||new Date().toISOString(),practice=createDefaultPractice(),savedPractice=student.practice&&typeof student.practice==='object'?student.practice:{},savedEthics=student.ethics&&typeof student.ethics==='object'?student.ethics:{};return{...student,fullName:String(student.fullName||'Unnamed student'),email:String(student.email||''),programme:String(student.programme||'Other'),yearOfStudy:String(student.yearOfStudy||'Other'),thesisTitle:String(student.thesisTitle||''),thesisStage:String(student.thesisStage||'topic_selection'),supervisorNotes:String(student.supervisorNotes||''),nextDeadline:String(student.nextDeadline||''),deadlineComment:String(student.deadlineComment||''),lastConsultationDate:String(student.lastConsultationDate||''),nextStep:String(student.nextStep||''),status:String(student.status||'active'),consultations:Array.isArray(student.consultations)?student.consultations:[],nirmTracking:mergeNirmTracking(student.nirmTracking),drafts:Array.isArray(student.drafts)?student.drafts:[],ethics:{...createDefaultEthics(),...savedEthics},practice:{scientificInternship:{...practice.scientificInternship,...(savedPractice.scientificInternship&&typeof savedPractice.scientificInternship==='object'?savedPractice.scientificInternship:{})},researchPractice:{...practice.researchPractice,...(savedPractice.researchPractice&&typeof savedPractice.researchPractice==='object'?savedPractice.researchPractice:{})}},createdAt:now,updatedAt:student.updatedAt||now}}
+const migrateRubric=rubric=>{const now=rubric.createdAt||new Date().toISOString(),criteria=Array.isArray(rubric.criteria)?rubric.criteria:[];return{title:'Untitled rubric',assignment:'',description:'',...rubric,criteria:withUniqueIds(criteria.map(item=>({name:'Criterion',description:'',maxPoints:0,...item,maxPoints:Number(item.maxPoints)||0}))),createdAt:now,updatedAt:rubric.updatedAt||now}}
+const migratePaper=paper=>{const now=paper.createdAt||new Date().toISOString();return{studentName:'Unknown student',studentEmail:'',course:'',assignment:'',rubricId:'',paperText:'',attachment:null,status:'not_graded',criterionGrades:[],grade:null,comments:'',aiStatus:'not_generated',aiGeneratedAt:'',...paper,criterionGrades:Array.isArray(paper.criterionGrades)?paper.criterionGrades:[],createdAt:now,updatedAt:paper.updatedAt||now}}
 export const uid = () => globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`
 const withUniqueIds=items=>{const seen=new Set();return items.filter(item=>item&&typeof item==='object').map(item=>{let id=item.id;if(!id||seen.has(id))id=uid();seen.add(id);return id===item.id?item:{...item,id}})}
 const loadCollection=(key,migrate)=>{const raw=readStorage(key,[]),migrated=withUniqueIds(raw.filter(item=>item&&typeof item==='object').map(migrate));if(JSON.stringify(raw)!==JSON.stringify(migrated))writeStorage(key,migrated);return migrated}
@@ -35,6 +37,10 @@ export const getTodos = () => loadCollection(KEYS.todos,migrateTodo)
 export const saveTodos = value => writeStorage(KEYS.todos, value)
 export const getStudents = () => loadCollection(KEYS.students,migrateStudent)
 export const saveStudents = value => writeStorage(KEYS.students, value)
+export const getRubrics = () => loadCollection(KEYS.rubrics,migrateRubric)
+export const saveRubrics = value => writeStorage(KEYS.rubrics, value)
+export const getPapers = () => loadCollection(KEYS.papers,migratePaper)
+export const savePapers = value => writeStorage(KEYS.papers, value)
 
 export function initializeSampleData() {
   try { if (localStorage.getItem(KEYS.initialized)) return } catch { return }

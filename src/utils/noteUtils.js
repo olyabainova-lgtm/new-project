@@ -1,10 +1,10 @@
 export const noteCategories=[
-  {value:'teaching_preparation',label:'Teaching preparation',color:'purple'},
+  {value:'teaching_preparation',label:'Teaching preparation',color:'lavender'},
   {value:'grading',label:'Grading / feedback',color:'rose'},
   {value:'supervision',label:'Thesis supervision',color:'indigo'},
-  {value:'research',label:'Research work',color:'green'},
+  {value:'research',label:'Research work',color:'emerald'},
   {value:'administration',label:'Administration',color:'amber'},
-  {value:'communication',label:'Communication',color:'blue'},
+  {value:'communication',label:'Communication',color:'cyan'},
   {value:'personal',label:'Personal',color:'gray'},
   {value:'other',label:'Other',color:'slate'},
 ]
