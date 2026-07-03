@@ -1,0 +1,11 @@
+import { approvalMessage, rejectionMessage, reminderMessage } from './messageTemplates'
+const REPLY_TO='o_bainova@kazguu.kz'
+const config={serviceId:import.meta.env.VITE_EMAILJS_SERVICE_ID,templateId:import.meta.env.VITE_EMAILJS_TEMPLATE_ID,publicKey:import.meta.env.VITE_EMAILJS_PUBLIC_KEY}
+export const isEmailConfigured=()=>Boolean(config.serviceId&&config.templateId&&config.publicKey)
+const subjects={approval:'Meeting request approved',rejection:'Meeting request update',reminder:'Reminder: upcoming meeting',custom:'Message from Olga Bainova'}
+async function send(request,type,body,subject=subjects[type]){const base={id:crypto.randomUUID(),type,recipientEmail:request.email,subject,body,status:'failed',errorMessage:'',sentAt:new Date().toISOString()};if(!isEmailConfigured())return{success:false,error:'Email service is not configured. You can still copy the message manually.',log:{...base,errorMessage:'EmailJS environment variables are missing.'}};try{const response=await fetch('https://api.emailjs.com/api/v1.0/email/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({service_id:config.serviceId,template_id:config.templateId,user_id:config.publicKey,template_params:{to_email:request.email,to_name:request.name,reply_to:REPLY_TO,from_name:'Olga Bainova',subject,message:body,meeting_date:request.date,meeting_time:request.startTime,meeting_duration:request.duration,meeting_format:request.format,meeting_topic:request.topic}})});if(!response.ok)throw new Error((await response.text())||`Email service returned ${response.status}`);return{success:true,log:{...base,status:'sent'}}}catch(error){return{success:false,error:error.message||'Email could not be sent.',log:{...base,errorMessage:error.message||'Unknown email error'}}}}
+export const sendApprovalEmail=request=>send(request,'approval',approvalMessage(request))
+export const sendRejectionEmail=request=>send(request,'rejection',rejectionMessage(request))
+export const sendReminderEmail=request=>send(request,'reminder',reminderMessage(request))
+export const sendCustomEmail=(request,subject,body)=>send(request,'custom',body,subject)
+export const messageForType=(request,type)=>type==='approval'?approvalMessage(request):type==='rejection'?rejectionMessage(request):reminderMessage(request)

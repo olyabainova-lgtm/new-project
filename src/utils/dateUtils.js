@@ -1,0 +1,5 @@
+import { getMonday, isoDate } from './timeUtils'
+export function getReportRange(period,custom={}){const today=new Date();today.setHours(12,0,0,0);let start,end;if(period==='week'){start=getMonday(today);end=new Date(start);end.setDate(end.getDate()+6)}else if(period==='month'){start=new Date(today.getFullYear(),today.getMonth(),1,12);end=new Date(today.getFullYear(),today.getMonth()+1,0,12)}else if(period==='semester'){const month=today.getMonth(),startMonth=month<6?0:6;start=new Date(today.getFullYear(),startMonth,1,12);end=new Date(today.getFullYear(),startMonth+6,0,12)}else{start=custom.start?new Date(`${custom.start}T12:00:00`):today;end=custom.end?new Date(`${custom.end}T12:00:00`):today}return{start:isoDate(start),end:isoDate(end)}}
+export const isDateInRange=(date,range)=>Boolean(date&&date>=range.start&&date<=range.end)
+export const daysFromToday=date=>{const today=new Date();today.setHours(0,0,0,0);return Math.ceil((new Date(`${date}T00:00:00`)-today)/86400000)}
+export const periodLabel=(period,range)=>period==='week'?'This week':period==='month'?'This month':period==='semester'?'This semester':`${range.start} to ${range.end}`

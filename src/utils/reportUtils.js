@@ -1,0 +1,21 @@
+import { isoDate, toMinutes } from './timeUtils'
+import { isDateInRange, daysFromToday } from './dateUtils'
+import { stageLabel } from './studentUtils'
+import { getSupervisionAlerts } from './supervisionTracking'
+export const workloadCategories=[
+  {key:'class',label:'Class',color:'purple'}, {key:'consultation',label:'Consultation',color:'blue'},
+  {key:'administration',label:'Administrative meeting',color:'amber'}, {key:'research',label:'Research work',color:'green'},
+  {key:'grading',label:'Grading / feedback',color:'rose'}, {key:'supervision',label:'Thesis supervision',color:'indigo'},
+  {key:'personal',label:'Personal',color:'gray'}, {key:'other',label:'Other',color:'slate'},
+]
+export const normalizeWorkType=type=>({class:'class',teaching_preparation:'class',consultation:'consultation',administrative_meeting:'administration',administration:'administration',communication:'other',research:'research',grading:'grading',supervision:'supervision',personal:'personal',other:'other'}[type]||'other')
+const durationHours=(start,end)=>{const value=toMinutes(end)-toMinutes(start);return Number.isFinite(value)?Math.max(0,value)/60:0}
+export function buildReportData({requests,blocked,todos,students,range}){
+  const meetings=requests.filter(r=>isDateInRange(r.date,range)),blocks=blocked.filter(b=>isDateInRange(b.date,range)),statusCounts={pending:0,approved:0,rejected:0,completed:0};meetings.forEach(r=>{if(statusCounts[r.status]!==undefined)statusCounts[r.status]++})
+  const workload=Object.fromEntries(workloadCategories.map(c=>[c.key,0]));blocks.forEach(b=>{workload[normalizeWorkType(b.type)]+=durationHours(b.startTime,b.endTime)});meetings.filter(r=>['approved','completed'].includes(r.status)).forEach(r=>{workload[r.meetingType==='thesis_supervision'?'supervision':'consultation']+=Number(r.duration||0)/60});const totalHours=Object.values(workload).reduce((sum,n)=>sum+n,0)
+  const scheduledTodoHours=blocks.filter(b=>b.source==='scheduled_todo').reduce((sum,b)=>sum+durationHours(b.startTime,b.endTime),0),highPriorityTasks=todos.filter(t=>t.status!=='done'&&t.priority==='high').length,activeStudents=students.filter(s=>!['completed','inactive'].includes(s.status)).length,studentsNeedingAttention=students.filter(s=>s.status==='needs_attention').length
+  const stageCounts={};students.forEach(s=>{const label=stageLabel(s.thesisStage);stageCounts[label]=(stageCounts[label]||0)+1});const followUp=students.map(student=>{const deadlineDays=student.nextDeadline?daysFromToday(student.nextDeadline):null,lastDays=student.lastConsultationDate?Math.floor((Date.now()-new Date(`${student.lastConsultationDate}T00:00:00`))/86400000):null,reasons=getSupervisionAlerts(student).map(alert=>alert.text);if(student.status==='needs_attention')reasons.push('Marked needs attention');return{student,reasons,deadlineDays,lastDays}}).filter(x=>x.reasons.length)
+  const now=new Date(),today=isoDate(now),nextWeek=new Date(now);nextWeek.setDate(nextWeek.getDate()+7);const end7=isoDate(nextWeek),todayMeetings=requests.filter(r=>r.date===today&&r.status==='approved'),todayBlocks=blocked.filter(b=>b.date===today&&b.source==='manual_block'),todayTodos=blocked.filter(b=>b.date===today&&b.source?.startsWith('scheduled_')),upcomingMeetings=requests.filter(r=>r.status==='approved'&&r.date>today&&r.date<=end7).sort((a,b)=>a.date.localeCompare(b.date)),upcomingDeadlines=students.filter(s=>s.nextDeadline>=today&&s.nextDeadline<=end7).sort((a,b)=>a.nextDeadline.localeCompare(b.nextDeadline))
+  const busyDays={};blocks.forEach(b=>{busyDays[b.date]=(busyDays[b.date]||0)+durationHours(b.startTime,b.endTime)});meetings.filter(r=>['approved','completed'].includes(r.status)).forEach(r=>{busyDays[r.date]=(busyDays[r.date]||0)+Number(r.duration||0)/60});const busiestDays=Object.entries(busyDays).sort((a,b)=>b[1]-a[1]).slice(0,5)
+  return{meetings,blocks,statusCounts,workload,totalHours,scheduledTodoHours,highPriorityTasks,activeStudents,studentsNeedingAttention,stageCounts,followUp,todayMeetings,todayBlocks,todayTodos,upcomingMeetings,upcomingDeadlines,busiestDays,summary:{total:meetings.length,supervision:meetings.filter(r=>r.meetingType==='thesis_supervision').length,blockedHours:blocks.reduce((sum,b)=>sum+durationHours(b.startTime,b.endTime),0)}}
+}

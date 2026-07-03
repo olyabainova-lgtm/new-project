@@ -1,0 +1,3 @@
+import { Link } from 'react-router-dom'
+import StudentDeadlineBadge from './StudentDeadlineBadge'
+export default function StudentsToFollowUp({items}){return <div className="follow-up-list">{items.length?items.map(({student,reasons})=><article key={student.id}><div><strong>{student.fullName}</strong><span>{student.programme} · {student.thesisTitle||'Thesis title not recorded'}</span></div><StudentDeadlineBadge date={student.nextDeadline}/><p>{reasons.join(' · ')}</p></article>):<div className="empty-state">No students currently need follow-up.</div>}<Link className="btn btn-ghost btn-sm" to="/dashboard/students">Open supervision profiles</Link></div>}

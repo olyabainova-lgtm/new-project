@@ -1,0 +1,7 @@
+import { formatLongDate } from './timeUtils'
+const details = (r) => `Date and time: ${formatLongDate(r.date)}, ${r.startTime}\nDuration: ${r.duration} minutes\nFormat: ${r.format === 'online' ? 'Online' : 'Offline'}${r.format==='online'&&r.onlineLink?`\nMeeting link: ${r.onlineLink}`:''}`
+const supervisionApproval=r=>r.meetingType==='thesis_supervision'?'\n\nIf you attached supervision files, I will review them before or during the meeting where possible.':''
+const supervisionReminder=r=>r.meetingType==='thesis_supervision'?'\n\nIf this is a thesis supervision meeting, please make sure all relevant files are attached or shared before the meeting.':''
+export const approvalMessage = (r) => `Dear ${r.name},\n\nYour meeting request has been approved.\n\n${details(r)}\nMeeting topic: ${r.topic}\n\nIf the meeting is online, please make sure the meeting link is active and accessible.${supervisionApproval(r)}\n\nBest regards,\nOlga Bainova`
+export const rejectionMessage = (r) => `Dear ${r.name},\n\nThank you for your meeting request.\n\nUnfortunately, I am not able to approve the selected time slot. Please choose another available slot and submit a new request.\n\nBest regards,\nOlga Bainova`
+export const reminderMessage = (r) => `Dear ${r.name},\n\nThis is a kind reminder of our upcoming meeting.\n\n${details(r)}\n\nPlease prepare any materials or questions you would like to discuss.${supervisionReminder(r)}\n\nBest regards,\nOlga Bainova`

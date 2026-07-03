@@ -1,0 +1,13 @@
+import { useMemo, useState } from 'react'
+import ReportPeriodFilter from '../components/ReportPeriodFilter'
+import ReportSummaryCards from '../components/ReportSummaryCards'
+import WorkloadByCategory from '../components/WorkloadByCategory'
+import MeetingStatusReport from '../components/MeetingStatusReport'
+import SupervisionReport from '../components/SupervisionReport'
+import UpcomingOverview from '../components/UpcomingOverview'
+import CopyReportSummaryButton from '../components/CopyReportSummaryButton'
+import { getBlockedSlots, getRequests, getStudents, getTodos } from '../utils/storage'
+import { getReportRange, periodLabel } from '../utils/dateUtils'
+import { buildReportData } from '../utils/reportUtils'
+import { formatLongDate } from '../utils/timeUtils'
+export default function ReportsPage(){const [period,setPeriod]=useState('week'),[custom,setCustom]=useState({start:'',end:''}),requests=useMemo(getRequests,[]),blocked=useMemo(getBlockedSlots,[]),todos=useMemo(getTodos,[]),students=useMemo(getStudents,[]),range=getReportRange(period,custom),label=periodLabel(period,range),data=useMemo(()=>buildReportData({requests,blocked,todos,students,range}),[requests,blocked,todos,students,range.start,range.end]);return <div className="dashboard-content"><div className="page-heading"><div><span className="eyebrow">Workload intelligence</span><h1>Mini-Reports</h1><p>Understand meetings, occupied time, supervision activity, and upcoming priorities.</p></div><CopyReportSummaryButton data={data} label={label}/></div><ReportPeriodFilter {...{period,setPeriod,custom,setCustom}}/><div className="report-range-label">Showing <strong>{label}</strong> · {formatLongDate(range.start)} – {formatLongDate(range.end)}</div><ReportSummaryCards data={data}/><div className="report-two-column"><WorkloadByCategory workload={data.workload} total={data.totalHours}/><MeetingStatusReport counts={data.statusCounts}/></div><section className="card report-section busiest-report"><div><span className="eyebrow">Schedule intensity</span><h2>Busiest days</h2></div>{data.busiestDays.length?<div className="busiest-days">{data.busiestDays.map(([date,hours],index)=><span key={date}><i>{index+1}</i><strong>{formatLongDate(date)}</strong><b>{hours.toFixed(1)}h</b></span>)}</div>:<p className="muted">No occupied time in this period.</p>}</section><div className="report-two-column report-lower"><SupervisionReport data={data}/><UpcomingOverview data={data}/></div></div>}

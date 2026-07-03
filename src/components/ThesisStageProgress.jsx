@@ -1,0 +1,2 @@
+import { thesisStages, stageLabel } from '../utils/studentUtils'
+export default function ThesisStageProgress({stage}){const index=Math.max(0,thesisStages.findIndex(([key])=>key===stage)),progress=((index+1)/thesisStages.length)*100;return <div className="thesis-progress"><div><span>{stageLabel(stage)}</span><small>{index+1} of {thesisStages.length}</small></div><div className="progress-track"><i style={{width:`${progress}%`}}/></div></div>}

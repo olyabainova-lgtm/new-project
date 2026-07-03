@@ -1,0 +1,8 @@
+const DB_NAME='teacherflow_files',STORE='attachments',VERSION=1
+const openDatabase=()=>new Promise((resolve,reject)=>{if(!('indexedDB'in window))return reject(new Error('IndexedDB is not supported in this browser.'));const request=indexedDB.open(DB_NAME,VERSION);request.onupgradeneeded=()=>{if(!request.result.objectStoreNames.contains(STORE))request.result.createObjectStore(STORE,{keyPath:'id'})};request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error)})
+const transaction=async(mode,action)=>{const db=await openDatabase();return new Promise((resolve,reject)=>{const tx=db.transaction(STORE,mode),store=tx.objectStore(STORE),request=action(store);request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);tx.oncomplete=()=>db.close()})}
+export async function saveAttachment(file,requestId,id=crypto.randomUUID()){const metadata={id,requestId,fileName:file.name,fileType:file.type||file.name.split('.').pop()||'file',fileSize:file.size,uploadedAt:new Date().toISOString()};await transaction('readwrite',store=>store.put({...metadata,blob:file}));return metadata}
+export const getAttachment=id=>transaction('readonly',store=>store.get(id))
+export async function getAttachmentsByRequestId(requestId){const all=await transaction('readonly',store=>store.getAll());return all.filter(item=>item.requestId===requestId)}
+export const deleteAttachment=id=>transaction('readwrite',store=>store.delete(id))
+export async function downloadAttachment(id){const item=await getAttachment(id);if(!item)throw new Error('Attachment not found.');const url=URL.createObjectURL(item.blob),link=document.createElement('a');link.href=url;link.download=item.fileName;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
